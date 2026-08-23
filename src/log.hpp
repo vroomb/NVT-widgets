@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nvt.hpp"
+#include <source_location>
 
 class nvt::log {
 public:

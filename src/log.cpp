@@ -1,6 +1,8 @@
 #include "log.hpp"
 #include <fstream>
+#include <format>
 #include <string>
+#include <iostream>
 
 thread_local int nvt::log::log_level = -1;
 

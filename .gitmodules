@@ -1,0 +1,3 @@
+[submodule "FakeVim"]
+	path = FakeVim
+	url = https://github.com/hluk/FakeVim.git

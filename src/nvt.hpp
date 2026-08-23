@@ -1,11 +1,5 @@
 #pragma once
 
-#include <QApplication>
-#include <QTextEdit>
-#include <QHBoxLayout>
-#include <QFontDatabase>
-#include <iostream>
-#include <source_location>
 #include <system_error>
 
 #define res_dir "H:/Projects/cpp/NVT-widgets/res/"
@@ -14,6 +8,10 @@
 namespace nvt {
     class log;
     class application;
+    class editor;
+    class editor_status_bar;
+    class proxy;
+    class explorer;
 
     enum errc {
         ok = 0,

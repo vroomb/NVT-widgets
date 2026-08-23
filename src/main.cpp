@@ -2,8 +2,7 @@
 #include "log.hpp"
 #include "application.hpp"
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     nvt::log log;
     log("New run");
 
