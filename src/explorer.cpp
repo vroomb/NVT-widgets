@@ -1,6 +1,6 @@
 #include "explorer.hpp"
 
-nvt::explorer::explorer(QWidget* parent) :
+nvt_widgets::explorer::explorer(QWidget* parent) :
     QTreeView(parent)
 {
     auto model = new QFileSystemModel;

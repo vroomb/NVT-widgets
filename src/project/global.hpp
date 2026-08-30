@@ -3,19 +3,19 @@
 #include <nlohmann/json.hpp>
 #include "project.hpp"
 
-struct nvt::launch_details {
+struct nvt::core::launch_details {
     std::string name{};
     fs::path location{};
     long long int last_updated;
 };
 
-const struct nvt::less_launch_details {
+const struct nvt::core::less_launch_details {
     bool operator()(const launch_details& lhs, const launch_details& rhs) const {
         return lhs.last_updated > rhs.last_updated;
     }
 };
 
-class PROJECT_API nvt::global {
+class PROJECT_API nvt::core::global {
 public:
     static int open(fs::path location);
     static int close();

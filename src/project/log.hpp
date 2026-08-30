@@ -1,10 +1,9 @@
 #pragma once
 
-#include "nvt_widgets.hpp"
-#include <QString>
+#include "project/nvt.hpp"
 #include <source_location>
 
-class nvt_widgets::log {
+class nvt::log {
 public:
     log();
     ~log();
@@ -26,18 +25,6 @@ public:
         const int max_log_level = 10,
         const std::source_location location = std::source_location::current()
     ) { return operator()(ev.message().c_str(), max_log_level, location); }
-
-    inline std::error_code operator()(
-        const QString& str,
-        const int max_log_level = 10,
-        const std::source_location location = std::source_location::current()
-    ) { return operator()(str.toLocal8Bit().constData(), max_log_level, location); }
-
-    inline std::error_code operator()(
-        const QByteArray& str,
-        const int max_log_level = 10,
-        const std::source_location location = std::source_location::current()
-    ) { return operator()(str.constData(), max_log_level, location); }
 
     int operator++();
     int operator--();

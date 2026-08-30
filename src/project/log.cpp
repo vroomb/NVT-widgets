@@ -1,21 +1,21 @@
-#include <log.hpp>
+#include "project/log.hpp"
 #include <fstream>
 #include <format>
 #include <string>
 #include <iostream>
 
-thread_local int nvt_widgets::log::log_level = -1;
+thread_local int nvt::log::log_level = -1;
 
-nvt_widgets::log::log() {
+nvt::log::log() {
     init_log_level = log_level;
     log_level++;
 }
 
-nvt_widgets::log::~log() {
+nvt::log::~log() {
     log_level = init_log_level;
 }
 
-std::error_code nvt_widgets::log::operator()(
+std::error_code nvt::log::operator()(
     const char * str,
     const int max_log_level,
     const std::source_location location
@@ -42,10 +42,10 @@ std::error_code nvt_widgets::log::operator()(
     return ec;
 }
 
-int nvt_widgets::log::operator++() {
+int nvt::log::operator++() {
     return log_level++;
 }
 
-int nvt_widgets::log::operator--() {
+int nvt::log::operator--() {
     return log_level--;
 }

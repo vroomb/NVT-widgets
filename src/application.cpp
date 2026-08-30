@@ -1,12 +1,12 @@
 #include "application.hpp"
-#include "mainwindow.hpp"
+#include "main_window.hpp"
 #include "log.hpp"
 #include <QFontDatabase>
 
-nvt::application::application(int argc, char* argv[]) :
+nvt_widgets::application::application(int argc, char* argv[]) :
     QApplication(argc, argv)
 {
-    nvt::log log;
+    nvt_widgets::log log;
 
     int johnston_bold_id =
         QFontDatabase::addApplicationFont(res_dir"johnston-itc/johnston-itc-std-bold.otf");
@@ -31,7 +31,7 @@ nvt::application::application(int argc, char* argv[]) :
     setFont(f);
 }
 
-int nvt::application::exec() {
+int nvt_widgets::application::exec() {
     w.show();
     return QApplication::exec();
 }

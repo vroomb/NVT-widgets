@@ -1,21 +1,19 @@
+add_subdirectory(project)
+add_subdirectory(timeline)
+
 qt_add_executable(NVT-widgets
     WIN32 MACOSX_BUNDLE
-    nvt.hpp
-    log.hpp
-    log.cpp
-    explorer.hpp
     explorer.cpp
-    mainwindow.hpp
-    mainwindow.cpp
-    application.hpp
+    main_window.cpp
+    log.cpp
     application.cpp
-    editor.hpp
     editor.cpp
     main.cpp
 )
 
 target_include_directories(NVT-widgets
     PRIVATE
+        .
         ../FakeVim
 )
 
@@ -24,6 +22,8 @@ target_link_libraries(NVT-widgets
         fakevim
         Qt::Core
         Qt::Widgets
+        projectlib
+        timelinelib
 )
 
 set_target_properties(NVT-widgets PROPERTIES

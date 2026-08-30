@@ -1,10 +1,10 @@
 #pragma once
 
-#include "nvt.hpp"
+#include "nvt_widgets.hpp"
 #include <QTreeView>
 #include <QFileSystemModel>
 
-class nvt::explorer : public QTreeView {
+class nvt_widgets::explorer : public QTreeView {
 public:
     explorer(QWidget* parent = nullptr);
 

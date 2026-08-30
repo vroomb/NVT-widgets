@@ -1,13 +1,16 @@
-#include <random>
-#include "story.hpp"
+#include "project/story.hpp"
+
 #include <lmdb.h>
 
+#include <random>
+#include <iostream>
+
 #ifdef    PROJECTLIB
-nvt::story* nvt::story::m_instance = nullptr;
+nvt::core::story* nvt::core::story::m_instance = nullptr;
 #endif // PROJECTLIB
 
 
-int [[nodiscard]] nvt::story::open(fs::path location) {
+int [[nodiscard]] nvt::core::story::open(fs::path location) {
     if (m_instance != nullptr) {
         std::cout << "don't instantiate story twice.\n";
         return -1;
@@ -17,7 +20,7 @@ int [[nodiscard]] nvt::story::open(fs::path location) {
     return 0;
 }
 
-nvt::story::story(fs::path location) :
+nvt::core::story::story(fs::path location) :
     m_location{ location },
     m_config_dir{ location / ".nvt" }
 {
@@ -30,19 +33,19 @@ nvt::story::story(fs::path location) :
     m_name = location.filename().string();
 }
 
-nvt::story* nvt::story::instance() {
+nvt::core::story* nvt::core::story::instance() {
     return m_instance;
 }
 
-std::string nvt::story::name() {
+std::string nvt::core::story::name() {
     return m_name;
 }
 
-fs::path nvt::story::location() {
+fs::path nvt::core::story::location() {
     return m_location;
 }
 
-int nvt::story::close() {
+int nvt::core::story::close() {
     if (m_instance == nullptr) {
         return -1;
     } else {
@@ -51,4 +54,4 @@ int nvt::story::close() {
     }
 }
 
-nvt::story::~story() {}
+nvt::core::story::~story() {}

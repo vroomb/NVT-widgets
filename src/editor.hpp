@@ -1,15 +1,49 @@
 #pragma once
 
-#include "nvt.hpp"
+#include "nvt_widgets.hpp"
 #include <QTextEdit>
 #include <QMainWindow>
 #include <QLabel>
 #include <fakevim/fakevimhandler.h>
+#include <filesystem>
+#include <QTemporaryFile>
+
+namespace nvt_widgets {
+    const class QFileDevice_error_category : public std::error_category {
+    public:
+        virtual const char* name() const noexcept {
+            return "QFileDeviceError";
+        }
+
+        virtual std::string message(int ev) const {
+            switch (ev) {
+            case QFileDevice::NoError:          return "No error occurred.";
+            case QFileDevice::ReadError:        return "An error occurred when reading from the file.";
+            case QFileDevice::WriteError:       return "An error occurred when writing to the file.";
+            case QFileDevice::FatalError:       return "A fatal error occurred.";
+            case QFileDevice::ResourceError:    return "Out of resources.";
+            case QFileDevice::OpenError:        return "The file could not be opened.";
+            case QFileDevice::AbortError:       return "The operation was aborted.";
+            case QFileDevice::TimeOutError:     return "A timeout occurred.";
+            case QFileDevice::UnspecifiedError: return "An unspecified error occurred.";
+            case QFileDevice::RemoveError:      return "The file could not be removed.";
+            case QFileDevice::RenameError:      return "The file could not be renamed.";
+            case QFileDevice::PositionError:    return "The position in the file could not be changed.";
+            case QFileDevice::ResizeError:      return "The file could not be resized.";
+            case QFileDevice::PermissionsError: return "The file could not be accessed.";
+            case QFileDevice::CopyError:        return "The file could not be copied.";
+            default:                            return "Unknown Error";
+            }
+        }
+    } QFileDeviceError;
+}
+
+namespace fs = std::filesystem;
 
 using FakeVim::Internal::ExCommand;
 using FakeVim::Internal::FakeVimHandler;
 
-class nvt::editor_status_bar : public QWidget {
+class nvt_widgets::editor_status_bar : public QWidget {
 public:
     editor_status_bar(QWidget* parent = nullptr);
 
@@ -21,29 +55,22 @@ private:
     QLabel* m_right = new QLabel;
 };
 
-class nvt::proxy : public QObject {
-    Q_OBJECT
-
+class nvt_widgets::editor : public QWidget {
 public:
-    proxy(
-        QWidget* editor,
-        editor_status_bar* status_bar,
-        FakeVimHandler* parent
-    );
+    editor(fs::path file_path = "", QWidget* parent = nullptr);
 
-    void openFile(const QString& fileName);
-
-signals:
-    void handleInput(QString& keys);
-    void requestSave();
-    void requestSaveAndQuit();
-    void requestQuit();
-
-public slots:
+    std::error_code saveFile();
 
 private:
-    QWidget* m_editor;
-    editor_status_bar* m_status_bar;
+    QTextEdit* text_edit = new QTextEdit{};
+    editor_status_bar* status_bar = new editor_status_bar{};
+    FakeVimHandler handler{text_edit, 0};
+
+    QString message{};
+
+    QTemporaryFile working_file;
+
+    fs::path m_file_path;
 
     enum commands {
         parse_fail,
@@ -62,15 +89,4 @@ private:
         else
             return parse_fail;
     }
-};
-
-class nvt::editor : public QWidget {
-public:
-    editor(QWidget* parent = nullptr);
-
-private:
-    QTextEdit* text_edit  = new QTextEdit{};
-    editor_status_bar* status_bar = new editor_status_bar{};
-    FakeVimHandler handler{text_edit, 0};
-    proxy* proxy = new nvt::proxy{ text_edit, status_bar, &handler };
 };

@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.19)
 project(NVT-widgets VERSION 0.1 LANGUAGES CXX)
 
+include("C:/Program Files/Microsoft Visual Studio/18/Community/VC/vcpkg/scripts/buildsystems/vcpkg.cmake")
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 
 qt_standard_project_setup()

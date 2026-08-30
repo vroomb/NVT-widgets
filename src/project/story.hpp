@@ -2,8 +2,11 @@
 
 #include "project.hpp"
 #include <unordered_map>
+#include <filesystem>
 
-class PROJECT_API nvt::story {
+namespace fs = std::filesystem;
+
+class PROJECT_API nvt::core::story {
 public:
     static int open(fs::path location);
     static int close();

@@ -1,82 +1,18 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
+#include "nvt.hpp"
+#include <lmdb.h>
 
 #include <set>
 #include <map>
 #include <list>
-#include <iostream>
-#include <fstream>
 #include <filesystem>
-#include <variant>
 #include <system_error>
-#include <expected>
-#include <lmdb.h>
 
 namespace fs = std::filesystem;
 
-#if defined(PROJECTLIB)
-#  define PROJECT_API __declspec(dllexport)
-#else
-#  define PROJECT_API __declspec(dllimport)
-#endif
-
-namespace nvt {
-    struct parse_result;
-    class story_entry;
-
-    class property;
-    class entity;
-
-    class relation;
-    struct linkage_element;
-    class linkage;
-
-    class event;
-    class event_chain;
-
-    class timeline;
-
-    struct launch_details;
-    struct less_launch_details;
-    class global;
-
-    class story;
-
-    void log(std::string);
-
-    enum errc {
-        ok = 0,
-        cyclic_event_chain, // this operation will result in a cyclic event chain
-        entry_exists,       // the story entry already exists
-        ambiguous_link,     // the link is ambiguous
-    };
-
-    class error_category : public std::error_category {
-    public:
-        virtual const char* name() const noexcept {
-            return "nvt";
-        }
-
-        virtual std::string message(int ev) const {
-            switch (ev) {
-            case ok:
-                return "OK";
-            case cyclic_event_chain:
-                return "this operation will result in a cyclic event chain";
-            case entry_exists:
-                return "the story entry already exists";
-            case ambiguous_link:
-                return "the link is ambiguous";
-            default:
-                return "Unknown err";
-            }
-        }
-    } nvt_error;
-}
-
 namespace mdb {
-    class error_category : public std::error_category {
+    const class error_category : public std::error_category {
     public:
         virtual const char* name() const noexcept {
             return "mdb";
@@ -88,15 +24,7 @@ namespace mdb {
     } mdb_error;
 }
 
-typedef int epoch;
-typedef int nid; // entity id
-typedef int vid; // event id
-typedef int tid; // timeline id
-typedef int cid; // chain id
-typedef int rid; // relation id
-#define id_null 0
-
-struct nvt::parse_result {
+struct nvt::core::parse_result {
     enum entry_type {
         unknown = 0,
         entity_entry,
@@ -114,7 +42,7 @@ struct nvt::parse_result {
     nid chain_entity();
 };
 
-class nvt::story_entry {
+class nvt::core::story_entry {
 public:
     virtual std::string name() {
         auto r = m_location.stem().string();
@@ -126,7 +54,7 @@ public:
 
     story_entry(fs::path location);
 
-    virtual std::error_code read() {}
+    virtual std::error_code read();
 
     virtual std::string gen_metadata() { return ""; }
 

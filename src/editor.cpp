@@ -1,4 +1,5 @@
 #include "editor.hpp"
+#include "log.hpp"
 #include <QLatin1StringView>
 #include <QString>
 #include <QBoxLayout>
@@ -6,7 +7,7 @@
 using FakeVim::Internal::FakeVimHandler;
 using FakeVim::Internal::ExCommand;
 
-nvt::editor_status_bar::editor_status_bar(QWidget* parent) :
+nvt_widgets::editor_status_bar::editor_status_bar(QWidget* parent) :
     QWidget(parent)
 {
     setLayout(new QHBoxLayout);
@@ -15,46 +16,71 @@ nvt::editor_status_bar::editor_status_bar(QWidget* parent) :
     layout()->addWidget(m_right);
 }
 
-nvt::proxy::proxy(
-    QWidget* editor,
-    editor_status_bar* status_bar,
-    FakeVimHandler* handler
-) :
-    QObject(handler),
-    m_editor{ editor },
-    m_status_bar{ status_bar }
+nvt_widgets::editor::editor(fs::path file_path, QWidget* parent) :
+    QWidget(parent),
+    working_file{file_path},
+    m_file_path{file_path}
 {
-    handler->commandBufferChanged.set(
+    nvt_widgets::log log{};
+
+    setLayout(new QVBoxLayout);
+    layout()->addWidget(text_edit);
+    layout()->addWidget(status_bar);
+    
+    if (working_file.open()) {
+        
+        QFile file{ file_path };
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            text_edit->setText(file.readAll());
+        } else {
+            log("file " + file.fileName() + " did not open");
+        }
+    } else {
+        log("working file " + working_file.fileName() + " did not open");
+    }
+
+    handler.commandBufferChanged.set(
         [this](const QString& contents, int cursorPos, int anchorPos, int messageLevel) {
-            m_status_bar->left()->setText(contents);
+            nvt_widgets::log log{};
+            log(contents);
+            log("cursorPos: " + std::to_string(cursorPos));
+            //log("text == contents: " + std::to_string(status_bar->left()->text() == contents));
+            if ((status_bar->left()->text() == contents) && (cursorPos == -1) && (message != "")) {
+                status_bar->left()->setText(message);
+                message = "";
+            }
+            else status_bar->left()->setText(contents);
         }
     );
-    handler->extraInformationChanged.set(
-        [](const QString& text) {
-        }
-    );
-    handler->statusDataChanged.set(
+    handler.extraInformationChanged.set(
         [this](const QString& text) {
-            m_status_bar->right()->setText(text);
+            status_bar->left()->setText(text);
         }
     );
-    handler->highlightMatches.set(
+    handler.statusDataChanged.set(
+        [this](const QString& text) {
+            status_bar->right()->setText(text);
+        }
+    );
+    handler.highlightMatches.set(
         [](const QString& needle) {
         }
     );
-    handler->handleExCommandRequested.set(
+    handler.handleExCommandRequested.set(
         [this](bool* handled, const ExCommand& cmd) {
+            std::error_code ec{};
+
             switch (scan(cmd)) {
             case save_and_quit:
-                emit requestSaveAndQuit();
                 *handled = true;
                 break;
             case save:
-                emit requestSave();
                 *handled = true;
+                ec = saveFile();
+                if (ec.value() == 0) message = "saved to " + QString::fromStdString(m_file_path.string());
+                else                 message = QString::fromStdString(ec.message());
                 break;
             case quit:
-                emit requestQuit();
                 *handled = true;
                 break;
             default:
@@ -62,65 +88,41 @@ nvt::proxy::proxy(
             }
         }
     );
-    handler->requestSetBlockSelection.set(
+    handler.requestSetBlockSelection.set(
         [](const QTextCursor& cursor) {
         }
     );
-    handler->requestDisableBlockSelection.set(
+    handler.requestDisableBlockSelection.set(
         [] {
         }
     );
-    handler->requestHasBlockSelection.set(
+    handler.requestHasBlockSelection.set(
         [](bool* on) {
         }
     );
-    handler->indentRegion.set(
+    handler.indentRegion.set(
         [](int beginBlock, int endBlock, QChar typedChar) {
         }
     );
-    handler->checkForElectricCharacter.set(
+    handler.checkForElectricCharacter.set(
         [](bool* result, QChar c) {
         }
     );
 
-    QObject::connect(this, &proxy::handleInput, handler,
-        [handler] (const QString &text) {
-            handler->handleInput(text);
-        }
-    );
-    QObject::connect(this, &proxy::requestSave, this,
-        [] () {
+    handler.handleCommand("set nopasskeys");
+    handler.handleCommand("set nopasscontrolkey");
 
-        }
-    );
-    QObject::connect(this, &proxy::requestSaveAndQuit, this,
-        [] () {
-  
-        }
-    );
-    QObject::connect(this, &proxy::requestQuit, this,
-        [] () {
-        
-        }
-    );
-
-    handler->handleCommand("set nopasskeys");
-    handler->handleCommand("set nopasscontrolkey");
-
-    handler->installEventFilter();
-    handler->setupWidget();
+    handler.installEventFilter();
+    handler.setupWidget();
 }
 
-void nvt::proxy::openFile(const QString &fileName) {
-    QString s(":r %1<CR>");
-    s = s.arg(fileName);
-    emit handleInput(s);
-}
+std::error_code nvt_widgets::editor::saveFile() {
+    QFile file{ m_file_path };
 
-nvt::editor::editor(QWidget* parent) :
-    QWidget(parent)
-{
-    setLayout(new QVBoxLayout);
-    layout()->addWidget(text_edit);
-    layout()->addWidget(status_bar);
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text) == false)
+        return std::error_code{ file.error(), QFileDeviceError };
+    if (file.write(text_edit->toPlainText().toLocal8Bit()) == -1)
+        return std::error_code{ file.error(), QFileDeviceError };
+
+    return std::error_code{ 0, QFileDeviceError };
 }

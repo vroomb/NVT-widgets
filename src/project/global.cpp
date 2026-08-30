@@ -1,10 +1,12 @@
-#include "global.hpp"
+#include "project/global.hpp"
+#include <iostream>
+#include <fstream>
 
 #ifdef    PROJECTLIB
-nvt::global* nvt::global::m_instance = nullptr;
+nvt::core::global* nvt::core::global::m_instance = nullptr;
 #endif // PROJECTLIB
 
-int nvt::global::open(fs::path location) {
+int nvt::core::global::open(fs::path location) {
     if (m_instance != nullptr) {
         std::cout << "don't instantiate global twice.\n";
         return -1;
@@ -14,7 +16,7 @@ int nvt::global::open(fs::path location) {
     return 0;
 }
 
-nvt::global::global(fs::path location) :
+nvt::core::global::global(fs::path location) :
     m_location{ location }
 {
     auto stream = std::ifstream(location.string() + "config.json");
@@ -28,13 +30,13 @@ nvt::global::global(fs::path location) :
             if ((i["name"].is_string() == true) &&
                 (i["location"].is_string() == true)) {
                 if (i["last updated"].is_number_unsigned() == true)
-                    m_launches.insert(nvt::launch_details{
+                    m_launches.insert(nvt::core::launch_details{
                         i["name"],
                         i["location"],
                         i["last updated"]
                     });
                 else
-                    m_launches.insert(nvt::launch_details{
+                    m_launches.insert(nvt::core::launch_details{
                         i["name"],
                         i["location"],
                         0
@@ -44,16 +46,16 @@ nvt::global::global(fs::path location) :
     }
 }
 
-nvt::global* nvt::global::instance() {
+nvt::core::global* nvt::core::global::instance() {
     return m_instance;
 }
 
-std::set<nvt::launch_details, nvt::less_launch_details>* nvt::global::launches() {
+std::set<nvt::core::launch_details, nvt::core::less_launch_details>* nvt::core::global::launches() {
     return &m_launches;
 }
 
 [[nodiscard]]
-int nvt::global::add_launch(launch_details ld, bool override) {
+int nvt::core::global::add_launch(launch_details ld, bool override) {
     rem_launch(ld.location.string());
 
     config_json["projects"] += {
@@ -77,7 +79,7 @@ int nvt::global::add_launch(launch_details ld, bool override) {
 }
 
 [[nodiscard]]
-int nvt::global::rem_launch(std::string location) {
+int nvt::core::global::rem_launch(std::string location) {
     for (auto& i : config_json["projects"]) if (i["location"] == location)
             i = nullptr;
 
@@ -86,7 +88,7 @@ int nvt::global::rem_launch(std::string location) {
     return 0;
 }
 
-int nvt::global::close() {
+int nvt::core::global::close() {
     if (m_instance == nullptr) {
         return -1;
     } else {
@@ -95,5 +97,5 @@ int nvt::global::close() {
     }
 }
 
-nvt::global::~global() {}
+nvt::core::global::~global() {}
 

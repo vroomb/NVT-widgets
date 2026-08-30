@@ -1,4 +1,4 @@
-#include "project.hpp"
+#include "project/project.hpp"
 
 namespace cr = std::chrono;
 using time_point = cr::time_point<cr::steady_clock>;
@@ -8,7 +8,7 @@ using seconds = cr::seconds;
 // 
 // }
 
-nvt::story_entry::story_entry(fs::path location) :
+nvt::core::story_entry::story_entry(fs::path location) :
     m_location{location}
 {
     if (fs::is_regular_file(m_location)) read();
@@ -17,12 +17,10 @@ nvt::story_entry::story_entry(fs::path location) :
     else write();
 }
 
-int nvt::story_entry::write(std::string file_contents) {
-    int r = 0;
+std::error_code nvt::core::story_entry::write(std::string file_contents) {
+    return std::error_code{};
+}
 
-    file_contents;
-
-    std::ofstream f{ m_location, std::ios::out | std::ios::trunc };
-
-    return r;
+std::error_code nvt::core::story_entry::read() {
+    return std::error_code{};
 }
