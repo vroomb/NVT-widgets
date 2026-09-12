@@ -1,4 +1,5 @@
 add_subdirectory(project)
+add_subdirectory(colors)
 add_subdirectory(timeline)
 
 qt_add_executable(NVT-widgets
@@ -20,6 +21,7 @@ target_include_directories(NVT-widgets
 target_link_libraries(NVT-widgets
     PRIVATE
         fakevim
+        colorlib
         Qt::Core
         Qt::Widgets
         projectlib

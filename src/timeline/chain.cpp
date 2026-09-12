@@ -3,12 +3,15 @@
 
 nvt::timeline::chain::chain(graph* parent) :
     QObject(parent)
-{}
+{
+    update_path();
+}
 
 nvt::timeline::chain::chain(QPointF position, graph* parent) :
     QObject(parent)
 {
     translate(position);
+    update_path();
 }
 
 QPolygonF nvt::timeline::chain::path() {
@@ -73,6 +76,7 @@ std::optional<QPointF> nvt::timeline::chain::cursor() {
 
 void nvt::timeline::chain::set_cursor(std::optional<QPointF> point) {
     m_cursor = point;
+    update_path();
 }
 
 void nvt::timeline::chain::translate(QPointF position) {

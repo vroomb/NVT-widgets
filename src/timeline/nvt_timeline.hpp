@@ -10,6 +10,9 @@
 
 namespace nvt {
     namespace timeline {
+        class log;
+        class circle;
+
         class node;
         class chain;
 

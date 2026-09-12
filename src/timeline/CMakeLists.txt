@@ -2,6 +2,7 @@ qt_add_library(timelinelib
     graph.cpp
     node.cpp
     chain.cpp
+    log.cpp
 )
 
 target_include_directories(timelinelib PUBLIC ..)
@@ -14,6 +15,7 @@ set_target_properties(timelinelib
 )
 target_link_libraries(timelinelib
     PRIVATE
+        colorlib
         Qt::Core
         Qt::Widgets
 )

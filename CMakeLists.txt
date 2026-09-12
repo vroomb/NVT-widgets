@@ -6,7 +6,7 @@ include("C:/Program Files/Microsoft Visual Studio/18/Community/VC/vcpkg/scripts/
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui)
 
 qt_standard_project_setup()
 
