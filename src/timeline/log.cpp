@@ -6,7 +6,9 @@
 
 thread_local int nvt::timeline::log::log_level = -1;
 
-nvt::timeline::log::log() {
+nvt::timeline::log::log() :
+    tp{ chr::high_resolution_clock::now() }
+{
     init_log_level = log_level;
     log_level++;
 }
@@ -25,11 +27,12 @@ std::error_code nvt::timeline::log::operator()(
 
     if (log_level < max_log_level || max_log_level == 0) {
         s = std::format(
-            "{:35}: {:90}: {}\n",
+            "{:35} at {:20}: {:90}: {}\n",
             std::format("{}({:3}:{:3})",
                 std::string{ location.file_name() }.substr(sizeof(src_dir) / sizeof(char) - 1),
                 location.line(), location.column()
             ),
+            chr::high_resolution_clock::now() - tp,
             s + location.function_name(), str
         );
         std::ofstream o{ "log.txt", std::ios::out | std::ios::app };

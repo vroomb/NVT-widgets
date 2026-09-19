@@ -1,5 +1,6 @@
 #include <timeline/chain.hpp>
 #include <timeline/graph.hpp>
+#include <timeline/log.hpp>
 
 nvt::timeline::chain::chain(graph* parent) :
     QObject(parent)
@@ -8,14 +9,45 @@ nvt::timeline::chain::chain(graph* parent) :
 }
 
 nvt::timeline::chain::chain(QPointF position, graph* parent) :
-    QObject(parent)
+    QObject(parent),
+    tile{ parent->get_tile_ref() }
 {
-    translate(position);
     update_path();
+    set_start_pos(position);
 }
 
-QPolygonF nvt::timeline::chain::path() {
-    return m_path;
+void nvt::timeline::chain::attach_node(node* add) {
+    if (add->chains().contains(this)) { return; }
+
+    auto i = m_nodes.begin();
+    for (; i != m_nodes.end(); i++) {
+        if (add->x() < std::get<node*>(*i)->x()) break;
+    }
+    i = m_nodes.insert(i, { add, {} });
+
+    node* p;
+    node* n;
+
+    if (i == m_nodes.begin()) p = nullptr;
+    else {
+        i--;
+        p = std::get<node*>(*i);
+        (*i).second.clear();
+        i++;
+    }
+
+    i++;
+
+    if (i == m_nodes.end()) n = nullptr;
+    else {
+        n = std::get<node*>(*i);
+    }
+
+
+    add->add_chain(this, p, n);
+    update_path();
+
+    connect(add, &node::position_changed, this, &chain::update_node);
 }
 
 // questions? consult this graph: https://www.desmos.com/calculator/imc5insskm
@@ -35,20 +67,20 @@ std::optional<QPointF> nvt::timeline::chain::hit(QPointF position) {
         auto d = m_path[i + 1].y();
 
         if (b == d) {
-            result = ((((a < x) && (x < c)) || ((c < x) && (x < a))) && (abs(y - b) < l));
+            result = ((((a <= x) && (x <= c)) || ((c <= x) && (x <= a))) && (abs(y - b) < l));
             continue;
         }
         else if (a == c) {
-            result = ((((b < y) && (y < d)) || ((d < y) && (y < b))) && (abs(x - a) < l));
+            result = ((((b <= y) && (y <= d)) || ((d <= y) && (y <= b))) && (abs(x - a) < l));
             continue;
         }
 
         auto tan_m = (b - d) / (a - c);
         auto csc_m = sqrt(1 + tan_m * tan_m) / tan_m;
 
-        result = (((tan_m * (x - a - l * csc_m) + b) < y) && (y < (tan_m * (x - a + l * csc_m) + b)))
-            && (((((-1 / tan_m) * (x - a) + b) < y) && (y < ((-1 / tan_m) * (x - c) + d)))
-                || ((((-1 / tan_m) * (x - a) + b) > y) && (y > ((-1 / tan_m) * (x - c) + d))));
+        result = (((tan_m * (x - a - l * csc_m) + b) <= y) && (y <= (tan_m * (x - a + l * csc_m) + b)))
+            && (((((-1 / tan_m) * (x - a) + b) <= y) && (y <= ((-1 / tan_m) * (x - c) + d)))
+                || ((((-1 / tan_m) * (x - a) + b) >= y) && (y >= ((-1 / tan_m) * (x - c) + d))));
     }
 
     if (result == false) return std::nullopt;
@@ -70,41 +102,85 @@ std::optional<QPointF> nvt::timeline::chain::hit(QPointF position) {
     }
 }
 
-std::optional<QPointF> nvt::timeline::chain::cursor() {
-    return m_cursor;
-}
-
-void nvt::timeline::chain::set_cursor(std::optional<QPointF> point) {
-    m_cursor = point;
-    update_path();
+void nvt::timeline::chain::set_start_pos(QPointF position) {
+    m_path.translate(position - m_path[0]);
+    emit path_changed();
 }
 
 void nvt::timeline::chain::translate(QPointF position) {
-    start_point += position;
-    end_point += position;
     m_path.translate(position);
+
+    // for (auto i = m_nodes.begin(); i != m_nodes.end(); i++) {
+    //     auto p = std::move((*i).second);
+    //     p.translate(position);
+    //     (*i).second = std::move(p);
+    // }
+
+    emit path_changed();
+}
+
+void nvt::timeline::chain::silent_translate(QPointF position) {
+    m_path.translate(position);
+
+    for (auto i = m_nodes.begin(); i != m_nodes.end(); i++) {
+        (*i).second.translate(position);
+    }
+}
+
+void nvt::timeline::chain::update_node(node* add) {
+    auto i = m_nodes.begin();
+    for (; i != m_nodes.end(); i++) {
+        if ((*i).first == add) {
+            (*i).second.clear();
+            break;
+        }
+    }
+
+    node* p;
+    node* n;
+
+    if (i == m_nodes.begin()) p = nullptr;
+    else {
+        i--;
+        p = std::get<node*>(*i);
+        (*i).second.clear();
+        i++;
+    }
+
+    i++;
+
+    if (i == m_nodes.end()) n = nullptr;
+    else {
+        n = std::get<node*>(*i);
+    }
+
+
+    add->add_chain(this, p, n);
+
+    update_path();
 }
 
 void nvt::timeline::chain::update_path() {
-    QPolygonF poly{start_point, end_point};
-    if (m_cursor.has_value()) poly << m_cursor.value();
-    for (auto i : m_nodes) poly << i->pos();
+    m_path.clear();
+    for (auto i = m_nodes.begin(); i != m_nodes.end(); i++) {
+        if ((*i).second.isEmpty()) {
+            auto j = i; j++;
 
-    auto mode = m_mode;
-
-    std::sort(poly.begin(), poly.end(),
-        [mode](QPointF lhs, QPointF rhs) {
-            if (mode == horizontal) return lhs.x() < rhs.x();
-            else                    return lhs.y() < rhs.y();
+            if (j != m_nodes.end())
+                (*i).second = VerticesHH((*i).first->get_center(), (*j).first->get_center());
+            else
+                (*i).second << (*i).first->get_center();
         }
-    );
-
-    m_path.clear(); int i = 0;
-    for (; i < poly.size() - 1; i++) {
-        m_path << VerticesHH(poly[i], poly[i + 1]);
+        m_path << (*i).second;
     }
-    m_path << poly[i];
 
+    if (m_path.size() > 0) {
+        m_path.push_front(QPointF{ m_path.front().x() - tile->width(), m_path.front().y() });
+        m_path.push_back(QPointF{ m_path.back().x() + tile->width(), m_path.back().y()});
+    } else {
+        m_path << QPointF{ -tile->width() / 2, 0 };
+        m_path << QPointF{  tile->width() / 2, 0 };
+    }
     emit path_changed();
 }
 

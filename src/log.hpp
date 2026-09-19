@@ -3,6 +3,9 @@
 #include "nvt_widgets.hpp"
 #include <QString>
 #include <source_location>
+#include <chrono>
+
+namespace chr = std::chrono;
 
 class nvt_widgets::log {
 public:
@@ -46,4 +49,5 @@ private:
     static thread_local int log_level;
 
     int init_log_level;
+    const chr::time_point<chr::high_resolution_clock> tp;
 };

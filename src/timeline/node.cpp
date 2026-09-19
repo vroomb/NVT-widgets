@@ -1,6 +1,7 @@
 #include <timeline/log.hpp>
 #include <timeline/node.hpp>
 #include <timeline/graph.hpp>
+#include <timeline/chain.hpp>
 
 #include <colors/nvt_colors.hpp>
 
@@ -9,10 +10,17 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QTimer>
+#include <QMenu>
+#include <QMouseEvent>
 
-QColor nvt::timeline::node::ref_background_color{ nvt::color::bse() };
-QPen nvt::timeline::node::ref_border{ nvt::color::pri(), 5 };
-int nvt::timeline::node::duration{ 256 };
+const qreal nvt::timeline::circle::outer_radius = 1;
+const qreal nvt::timeline::circle::inner_radius = 0.8;
+
+const QColor nvt::timeline::node::ref_background_color{ nvt::color::bse() };
+const QPen nvt::timeline::node::ref_border{ nvt::color::sec(), 5 };
+const int nvt::timeline::node::duration{ 16 };
+
+const QMargins nvt::timeline::node::m_margins{ 20, 20, 20, 20 };
 
 void nvt::timeline::circle::paintEvent(QPaintEvent*) {
     QPainter painter{ this };
@@ -34,49 +42,46 @@ void nvt::timeline::circle::paintEvent(QPaintEvent*) {
 
 nvt::timeline::node::node(graph* parent) :
     QWidget(parent),
-    title{ new QLineEdit },
-    m_layout{ new QGridLayout },
+    title{ new QLineEdit{this} },
     timer{ new QTimer },
-    station{ new circle },
+    station{ new circle{this} },
     background_color{ ref_background_color },
     border{ ref_border },
-    alpha{ 0 }
+    alpha{ 0 },
+    tile{ parent->get_tile_ref() },
+    m_menu{ new QMenu }
 {
-    setLayout(m_layout);
+    /* setup title */ {
+        auto f = title->font();
+        f.setPixelSize(30);
+        title->setFont(f);
 
-    m_layout->setContentsMargins(20, 20, 20, 20);
+        title->setPlaceholderText("Event title");
+        title->setStyleSheet("QLineEdit {border: 0px; background: transparent;}");
 
-    auto f = title->font();
-    f.setPixelSize(30);
-    title->setFont(f);
+        QFontMetrics fm{f};
+        title->resize(
+            fm.horizontalAdvance(title->placeholderText()) + 20,
+            fm.height()
+        );
+    }
 
-    title->setPlaceholderText("Event title");
-    title->setStyleSheet("QLineEdit {border: 0px; background: transparent;}");
+    move_title_down();
 
-    QFontMetrics fm(f);
-    title->resize(
-        fm.horizontalAdvance(title->placeholderText()) + 20,
-        fm.height()
-    );
-
-    auto w = m_layout->contentsMargins();
-    this->setFixedWidth(
-        station->width() +
-        title->width() +
-        m_layout->horizontalSpacing() +
-        w.left() + w.right()
-    );
-
-    m_layout->addWidget(station, 0, 0);
-    m_layout->addWidget(title, 1, 1);
-    m_layout->setColumnStretch(1, 1);
+    /* setup menu */ {
+        connect(m_menu->addAction("Detach"), &QAction::triggered, this, []() {});
+        connect(m_menu->addAction("Create a chain"), &QAction::triggered, this, []() {});
+        connect(m_menu->addAction("Toggle title position"), &QAction::triggered, this,
+            [this]() {
+                if (up_down) move_title_down();
+                else         move_title_up();
+            }
+        );
+    }
 
     connect(timer, &QTimer::timeout, this, &nvt::timeline::node::fade);
     connect(title, &QLineEdit::textChanged, this,
         [this](QString text) {
-            log log;
-            log("start");
-            ++log;
             QFontMetrics fm(title->font());
             title->resize(
                 ((text == "") ?
@@ -84,22 +89,46 @@ nvt::timeline::node::node(graph* parent) :
                     fm.horizontalAdvance(text)) + 20,
                 fm.height()
             );
-            log(std::to_string(title->width()));
-            auto w = m_layout->contentsMargins();
+            auto w = m_margins;
             this->setFixedWidth(
                 station->width() +
                 title->width() +
-                m_layout->horizontalSpacing() +
                 w.left() + w.right()
             );
-            log(std::to_string(station->width()));
-            log(std::to_string(title->width()));
-            log(std::to_string(m_layout->horizontalSpacing()));
-            log(std::to_string(w.left() + w.right()));
-            --log;
-            log("end");
         }
     );
+}
+
+void nvt::timeline::node::move_title_up() {
+    up_down = true;
+
+    auto s = station->size();
+    auto t = title->size();
+
+    station->move(m_margins.left(), m_margins.top() + t.height());
+    title->move(m_margins.left() + s.width(), m_margins.top());
+
+    resize(childrenRect().size().grownBy(m_margins));
+
+    offset = station->geometry().center();
+
+    center(m_center);
+}
+
+void nvt::timeline::node::move_title_down() {
+    up_down = false;
+
+    auto s = station->size();
+    auto t = title->size();
+
+    station->move(m_margins.left(), m_margins.top());
+    title->move(m_margins.left() + s.width(), m_margins.top() + s.height());
+
+    resize(childrenRect().size().grownBy(m_margins));
+
+    offset = station->geometry().center();
+
+    center(m_center);
 }
 
 bool nvt::timeline::node::hit(QPointF position) {
@@ -108,10 +137,29 @@ bool nvt::timeline::node::hit(QPointF position) {
         && (0 < position.y()) && (position.y() < size().height());
 }
 
+QPointF nvt::timeline::node::translate(QPointF position) {
+    m_center = m_center + position;
+    return center(m_center);
+}
+
+void nvt::timeline::node::silent_translate(QPointF position) {
+    m_center = m_center + position;
+    move(m_center.toPoint() - offset);
+}
+
+QPointF nvt::timeline::node::center(QPointF position) {
+    m_center = position;
+    move(position.toPoint() - offset);
+
+    emit position_changed(this);
+
+    return m_center;
+}
+
 void nvt::timeline::node::fade() {
     if (fade_in) {
-        if (alpha < 255) {
-            timer->start(duration / 16);
+        if (alpha < 195) {
+            timer->start(duration);
             alpha = alpha + 16;
             background_color.setAlpha(alpha);
             auto c = std::move(border.color());
@@ -121,7 +169,7 @@ void nvt::timeline::node::fade() {
         }
     } else {
         if (alpha > 0) {
-            timer->start(duration / 16);
+            timer->start(duration);
             alpha = alpha - 16;
             background_color.setAlpha(alpha);
             auto c = std::move(border.color());
@@ -156,4 +204,12 @@ void nvt::timeline::node::paintEvent(QPaintEvent* event) {
     painter.fillPath(pp, background_color);
     painter.setPen(border);
     painter.drawPath(pp);
+}
+
+void nvt::timeline::node::mousePressEvent(QMouseEvent* event) {
+    if (event->button() == Qt::RightButton) {
+        m_menu->exec(event->globalPos());
+    } else {
+        event->ignore();
+    }
 }

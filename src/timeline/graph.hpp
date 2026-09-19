@@ -3,7 +3,6 @@
 #include "nvt_timeline.hpp"
 #include "node.hpp"
 #include <QWidget>
-#include <QMenu>
 #include <variant>
 
 class TIMELINE_API nvt::timeline::graph : public QWidget {
@@ -11,6 +10,8 @@ public:
     graph(QWidget* parent = nullptr);
 
     void translate(QPointF position);
+
+    QPoint snap(QPoint pos);
 
     void add_event(bool);
     void add_chain(bool);
@@ -22,11 +23,14 @@ public:
     void mousePressEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
 
-
+    std::shared_ptr<QRectF> get_tile_ref() {
+        return tile;
+    }
 
 private:
     QPen pen;
-    QMenu* m_menu = new QMenu{ this };
+    QMenu* m_menu;
+    std::shared_ptr<QRectF> tile;
 
     QPoint context_menu_pos{};
     QPointF offset{};
