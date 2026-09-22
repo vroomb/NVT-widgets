@@ -1,7 +1,8 @@
 {
   "dependencies": [
+    "lmdb",
     "nlohmann-json",
     "yaml-cpp",
-    "lmdb"
+    "maddy"
   ]
 }

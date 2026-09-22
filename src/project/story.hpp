@@ -3,6 +3,7 @@
 #include "project.hpp"
 #include <unordered_map>
 #include <filesystem>
+#include <optional>
 
 namespace fs = std::filesystem;
 

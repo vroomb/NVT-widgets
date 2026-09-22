@@ -1,0 +1,33 @@
+* {
+  font-family: "Johnston ITC Std Medium";
+  font-size: 20px;
+}
+
+QMainWindow {
+  background: #010409;
+}
+
+QTextEdit {
+  background: transparent;
+  font-size: 25px;
+  border: 0px;
+  margin: 0px;
+  padding: 25px 100px;
+  font-family: "Cascadia Code";
+}
+
+QTabWidget {
+  background: transparent;
+  border: 0px;
+}
+
+QTreeView {
+  background: #161b22;
+}
+
+QLineEdit {
+  border: 0px;
+  background: transparent;
+  font-family: "Johnston ITC Std Medium";
+  font-size: 25px;
+}

@@ -3,10 +3,10 @@
 #include "log.hpp"
 #include <QFontDatabase>
 
-nvt_widgets::application::application(int argc, char* argv[]) :
+nvt::widgets::application::application(int argc, char* argv[]) :
     QApplication(argc, argv)
 {
-    nvt_widgets::log log;
+    nvt::widgets::log log;
 
     int johnston_bold_id =
         QFontDatabase::addApplicationFont(res_dir"johnston-itc/johnston-itc-std-bold.otf");
@@ -25,13 +25,20 @@ nvt_widgets::application::application(int argc, char* argv[]) :
             log("loaded " + i.toStdString());
     else log("could not load johnston medium itc");
 
+    QFile file{ res_dir"style.qss" };
+
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        setStyleSheet(file.readAll());
+    }
+
     QFont f{ "Johnston ITC Std Medium" };
     f.setPixelSize(20);
-
     setFont(f);
+
+    setCursorFlashTime(0);
 }
 
-int nvt_widgets::application::exec() {
+int nvt::widgets::application::exec() {
     w.show();
     return QApplication::exec();
 }

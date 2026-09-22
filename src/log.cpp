@@ -4,20 +4,20 @@
 #include <string>
 #include <iostream>
 
-thread_local int nvt_widgets::log::log_level = -1;
+thread_local int nvt::widgets::log::log_level = -1;
 
-nvt_widgets::log::log() :
+nvt::widgets::log::log() :
     tp{ chr::high_resolution_clock::now() }
 {
     init_log_level = log_level;
     log_level++;
 }
 
-nvt_widgets::log::~log() {
+nvt::widgets::log::~log() {
     log_level = init_log_level;
 }
 
-std::error_code nvt_widgets::log::operator()(
+std::error_code nvt::widgets::log::operator()(
     const char * str,
     const int max_log_level,
     const std::source_location location
@@ -45,10 +45,10 @@ std::error_code nvt_widgets::log::operator()(
     return ec;
 }
 
-int nvt_widgets::log::operator++() {
+int nvt::widgets::log::operator++() {
     return log_level++;
 }
 
-int nvt_widgets::log::operator--() {
+int nvt::widgets::log::operator--() {
     return log_level--;
 }

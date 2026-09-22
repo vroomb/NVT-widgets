@@ -57,7 +57,7 @@ nvt::timeline::node::node(graph* parent) :
         title->setFont(f);
 
         title->setPlaceholderText("Event title");
-        title->setStyleSheet("QLineEdit {border: 0px; background: transparent;}");
+        //title->setStyleSheet("QLineEdit {border: 0px; background: transparent;}");
 
         QFontMetrics fm{f};
         title->resize(
@@ -119,7 +119,7 @@ void nvt::timeline::node::move_title_down() {
     up_down = false;
 
     auto s = station->size();
-    auto t = title->size();
+    // auto t = title->size();
 
     station->move(m_margins.left(), m_margins.top());
     title->move(m_margins.left() + s.width(), m_margins.top() + s.height());
@@ -208,7 +208,7 @@ void nvt::timeline::node::paintEvent(QPaintEvent* event) {
 
 void nvt::timeline::node::mousePressEvent(QMouseEvent* event) {
     if (event->button() == Qt::RightButton) {
-        m_menu->exec(event->globalPos());
+        m_menu->exec(event->globalPosition().toPoint());
     } else {
         event->ignore();
     }

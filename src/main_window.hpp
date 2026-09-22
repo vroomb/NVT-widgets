@@ -1,12 +1,11 @@
 #pragma once
 
 #include "nvt_widgets.hpp"
-#include "editor.hpp"
 #include "explorer.hpp"
 #include <QMainWindow>
 #include <QTabWidget>
 
-class nvt_widgets::main_window : public QMainWindow {
+class nvt::widgets::main_window : public QMainWindow {
 public:
     explicit main_window(QWidget *parent = nullptr);
     ~main_window() override;

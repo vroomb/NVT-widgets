@@ -9,7 +9,7 @@ struct nvt::core::launch_details {
     long long int last_updated;
 };
 
-const struct nvt::core::less_launch_details {
+struct nvt::core::less_launch_details {
     bool operator()(const launch_details& lhs, const launch_details& rhs) const {
         return lhs.last_updated > rhs.last_updated;
     }

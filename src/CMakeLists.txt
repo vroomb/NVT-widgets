@@ -1,3 +1,7 @@
+include("C:/Program Files/Microsoft Visual Studio/18/Community/VC/vcpkg/scripts/buildsystems/vcpkg.cmake")
+
+find_package(maddy CONFIG REQUIRED)
+
 add_subdirectory(project)
 add_subdirectory(colors)
 add_subdirectory(timeline)
@@ -20,10 +24,12 @@ target_include_directories(NVT-widgets
 
 target_link_libraries(NVT-widgets
     PRIVATE
+        maddy::maddy
         fakevim
         colorlib
-        Qt::Core
-        Qt::Widgets
+        Qt6::Core
+        Qt6::Widgets
+        Qt6::Gui
         projectlib
         timelinelib
 )

@@ -7,7 +7,7 @@
 
 namespace chr = std::chrono;
 
-class nvt_widgets::log {
+class nvt::widgets::log {
 public:
     log();
     ~log();

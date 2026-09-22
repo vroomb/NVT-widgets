@@ -10,7 +10,7 @@ nvt::core::story* nvt::core::story::m_instance = nullptr;
 #endif // PROJECTLIB
 
 
-int [[nodiscard]] nvt::core::story::open(fs::path location) {
+int nvt::core::story::open(fs::path location) {
     if (m_instance != nullptr) {
         std::cout << "don't instantiate story twice.\n";
         return -1;

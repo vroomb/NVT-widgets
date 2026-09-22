@@ -8,7 +8,9 @@
 #include <filesystem>
 #include <QTemporaryFile>
 
-namespace nvt_widgets {
+class QTimer;
+
+namespace nvt::widgets {
     const class QFileDevice_error_category : public std::error_category {
     public:
         virtual const char* name() const noexcept {
@@ -43,7 +45,7 @@ namespace fs = std::filesystem;
 using FakeVim::Internal::ExCommand;
 using FakeVim::Internal::FakeVimHandler;
 
-class nvt_widgets::editor_status_bar : public QWidget {
+class nvt::widgets::editor_status_bar : public QWidget {
 public:
     editor_status_bar(QWidget* parent = nullptr);
 
@@ -55,22 +57,40 @@ private:
     QLabel* m_right = new QLabel;
 };
 
-class nvt_widgets::editor : public QWidget {
+class nvt::widgets::editor_text_edit : public QTextEdit {
+public:
+    editor_text_edit(QWidget* parent = nullptr) : QTextEdit(parent) {}
+
+    QRect selected_rect;
+    QString plain_text;
+private:
+    bool read_mode = false;
+
+    void paintEvent(QPaintEvent* event) override;
+    void contextMenuEvent(QContextMenuEvent* event) override;
+};
+
+class nvt::widgets::editor : public QWidget{
+    friend editor_text_edit;
+
 public:
     editor(fs::path file_path = "", QWidget* parent = nullptr);
 
     std::error_code saveFile();
 
 private:
-    QTextEdit* text_edit = new QTextEdit{};
+    void paintEvent(QPaintEvent* event) override;
+
+    editor_text_edit* text_edit = new editor_text_edit{};
     editor_status_bar* status_bar = new editor_status_bar{};
+    QTimer* timer;
     FakeVimHandler handler{text_edit, 0};
 
     QString message{};
 
     QTemporaryFile working_file;
-
     fs::path m_file_path;
+    bool saved = true;
 
     enum commands {
         parse_fail,
@@ -89,4 +109,6 @@ private:
         else
             return parse_fail;
     }
+
+    static std::string markdown_css;
 };

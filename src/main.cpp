@@ -2,9 +2,9 @@
 #include "application.hpp"
 
 int main(int argc, char *argv[]) {
-    nvt_widgets::log log;
+    nvt::widgets::log log;
     log("New run");
 
-    nvt_widgets::application a(argc, argv);
+    nvt::widgets::application a(argc, argv);
     return a.exec();
 }

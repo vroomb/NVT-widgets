@@ -4,7 +4,7 @@
 #include "main_window.hpp"
 #include <QApplication>
 
-class nvt_widgets::application : public QApplication {
+class nvt::widgets::application : public QApplication {
 public:
     application(int argc, char* argv[]);
 

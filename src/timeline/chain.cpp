@@ -127,35 +127,77 @@ void nvt::timeline::chain::silent_translate(QPointF position) {
     }
 }
 
+/*
+
+Here to explain this function, here we go.
+
+i is the iterator pointing to the node to be updated,
+j is the iterator after the valid position of updated node.
+
+we want to keep the function short in the case the position
+does not need to update. that is why we do a j--; if (i == j)
+as it verifies if the position is valid.
+
+in the case the position does need to update, we erase(i)
+and insert it at just before j.
+
+this code is insanely messy because for some reason someone
+up in the c++ standards committee decided we shouldn't have
+an i.next() function
+
+even java got this right.
+
+*/
+//
 void nvt::timeline::chain::update_node(node* add) {
-    auto i = m_nodes.begin();
-    for (; i != m_nodes.end(); i++) {
-        if ((*i).first == add) {
-            (*i).second.clear();
-            break;
+    auto i = m_nodes.end();
+    auto j = m_nodes.end();
+    for (auto it = m_nodes.begin(); it != m_nodes.end(); it++) {
+        if (i == m_nodes.end() && (*it).first == add) {
+            i = it;
+        }
+
+        if (j == m_nodes.end() && add->x() < (*it).first->x()) {
+            j = it;
         }
     }
 
-    node* p;
-    node* n;
+    if (j == m_nodes.begin()) {
+        (*j).second.clear();
+        m_nodes.erase(i);
+        m_nodes.insert(j, { add, {} });
+        add->chain_update(this, nullptr, (*j).first);
 
-    if (i == m_nodes.begin()) p = nullptr;
-    else {
-        i--;
-        p = std::get<node*>(*i);
-        (*i).second.clear();
-        i++;
+    } else {
+        j--;
+        if (i == j) {
+            (*i).second.clear();
+
+            if (i != m_nodes.begin()) {
+                j--;
+                (*j).second.clear();
+            }
+        } else {
+            node* n = nullptr;
+            node* p = (*j).first;
+
+            (*j).second.clear();
+            j++;
+            if (j != m_nodes.end()) {
+                n = (*j).first;
+            }
+
+            if (i != m_nodes.begin()) {
+                auto k = i; k--;
+                (*k).second.clear();
+            }
+
+            m_nodes.erase(i);
+            m_nodes.insert(j, { add, {} });
+
+            add->chain_update(this, p, n);
+        }
     }
-
-    i++;
-
-    if (i == m_nodes.end()) n = nullptr;
-    else {
-        n = std::get<node*>(*i);
-    }
-
-
-    add->add_chain(this, p, n);
 
     update_path();
 }
