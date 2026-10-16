@@ -8,12 +8,14 @@ add_subdirectory(timeline)
 
 qt_add_executable(NVT-widgets
     WIN32 MACOSX_BUNDLE
+    log.cpp
+    main.cpp
+    editor.cpp
     explorer.cpp
     main_window.cpp
-    log.cpp
     application.cpp
-    editor.cpp
-    main.cpp
+    yaml_display.cpp
+    launch_window.cpp
 )
 
 target_include_directories(NVT-widgets

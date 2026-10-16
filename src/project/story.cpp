@@ -1,4 +1,5 @@
 #include "project/story.hpp"
+#include "log.hpp"
 
 #include <lmdb.h>
 
@@ -10,26 +11,30 @@ nvt::core::story* nvt::core::story::m_instance = nullptr;
 #endif // PROJECTLIB
 
 
-int nvt::core::story::open(fs::path location) {
+std::error_code nvt::core::story::open(fs::path location) {
+    log log{};
     if (m_instance != nullptr) {
         std::cout << "don't instantiate story twice.\n";
-        return -1;
+        return std::make_error_code(std::errc::already_connected);
+    }
+
+    if (fs::directory_entry(location).exists() == false) {
+        std::error_code ec{};
+        if (fs::create_directory(location, ec) == false) {
+            log("story directory not created");
+            log(ec);
+            return ec;
+        }
     }
 
     m_instance = new story(location);
-    return 0;
+    return std::error_code{};
 }
 
 nvt::core::story::story(fs::path location) :
     m_location{ location },
     m_config_dir{ location / ".nvt" }
 {
-    if (fs::directory_entry(m_config_dir).exists() == false) {
-        std::error_code ec{};
-        if (fs::create_directory(m_config_dir, ec) == false)
-            std::cout << "story directory not created: " << ec << "\n";
-    }
-
     m_name = location.filename().string();
 }
 

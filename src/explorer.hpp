@@ -19,7 +19,5 @@ signals:
 private:
     void mouseDoubleClickEvent(QMouseEvent* event) override;
 
-    const char* root = "H:/Documents/Obsidian/Reason";
-
     QFileSystemModel* model;
 };

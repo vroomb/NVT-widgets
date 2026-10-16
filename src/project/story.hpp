@@ -9,7 +9,7 @@ namespace fs = std::filesystem;
 
 class PROJECT_API nvt::core::story {
 public:
-    static int open(fs::path location);
+    static std::error_code open(fs::path location);
     static int close();
     static story* instance();
 

@@ -1,6 +1,6 @@
 * {
   font-family: "Johnston ITC Std Medium";
-  font-size: 20px;
+  font-size: 15pt;
 }
 
 QMainWindow {
@@ -9,7 +9,7 @@ QMainWindow {
 
 QTextEdit {
   background: transparent;
-  font-size: 25px;
+  font-size: 18pt;
   border: 0px;
   margin: 0px;
   padding: 25px 100px;

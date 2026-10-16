@@ -7,8 +7,10 @@
 #include <fakevim/fakevimhandler.h>
 #include <filesystem>
 #include <QTemporaryFile>
+#include <QScrollArea>
 
 class QTimer;
+class QLineEdit;
 
 namespace nvt::widgets {
     const class QFileDevice_error_category : public std::error_category {
@@ -59,12 +61,14 @@ private:
 
 class nvt::widgets::editor_text_edit : public QTextEdit {
 public:
-    editor_text_edit(QWidget* parent = nullptr) : QTextEdit(parent) {}
+    editor_text_edit(QWidget* parent = nullptr);
 
     QRect selected_rect;
     QString plain_text;
 private:
     bool read_mode = false;
+
+    static QFont edit_mode_font;
 
     void paintEvent(QPaintEvent* event) override;
     void contextMenuEvent(QContextMenuEvent* event) override;
@@ -79,8 +83,10 @@ public:
     std::error_code saveFile();
 
 private:
-    void paintEvent(QPaintEvent* event) override;
+    //void paintEvent(QPaintEvent* event) override;
 
+    QLineEdit* title;
+    yaml_display* yaml_widget;
     editor_text_edit* text_edit = new editor_text_edit{};
     editor_status_bar* status_bar = new editor_status_bar{};
     QTimer* timer;

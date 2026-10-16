@@ -8,7 +8,6 @@
 class nvt::widgets::main_window : public QMainWindow {
 public:
     explicit main_window(QWidget *parent = nullptr);
-    ~main_window() override;
 
 private:
     QTabWidget* tab_widget = new QTabWidget;

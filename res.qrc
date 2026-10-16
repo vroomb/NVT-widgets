@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>res/launch.qss</file>
+        <file>res/markdown.css</file>
+        <file>res/style.qss</file>
+        <file>res/johnston-itc/johnston-itc-std-bold.otf</file>
+        <file>res/johnston-itc/johnston-itc-std-medium.otf</file>
+        <file>res/svg/blue_arrow.svg</file>
+        <file>res/svg/lavender_arrow.svg</file>
+        <file>res/svg/yellow_arrow.svg</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,36 @@
+* {
+    font-family: "Johnston ITC Std Medium";
+    font-size: 16pt;
+}
+
+QMainWindow {
+    background: #111;
+}
+
+QLineEdit, QListWidget {
+    border-width: 2px;
+    border-style: solid;
+    border-color: #1f1f1f;
+    border-radius: 0.5em;
+
+    background: transparent;
+    padding: 0.5em;
+}
+
+QStatusBar {
+    background: #090909;
+}
+
+QStatusBar::item {
+    border: None;
+}
+
+.nvt_label, .version_label {
+    color: #ceb9d9;
+    font-size: 27pt;
+}
+
+.version_label {
+    font-family: "Josefin Sans";
+    font-size: 20pt;
+}

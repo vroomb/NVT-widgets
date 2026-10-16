@@ -1,7 +1,6 @@
 #pragma once
 
 #include "nvt_widgets.hpp"
-#include "main_window.hpp"
 #include <QApplication>
 
 class nvt::widgets::application : public QApplication {
@@ -11,5 +10,6 @@ public:
     int exec();
 
 private:
-    main_window w{};
+    main_window* w = nullptr;
+    launch_window* lw = nullptr;
 };

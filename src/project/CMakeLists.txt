@@ -9,6 +9,7 @@ add_library(projectlib SHARED
     "global.cpp"
     "story.cpp"
     "log.cpp"
+    "property.cpp"
 )
 
 target_include_directories(projectlib PUBLIC ..)

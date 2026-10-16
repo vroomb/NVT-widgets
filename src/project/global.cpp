@@ -17,12 +17,18 @@ int nvt::core::global::open(fs::path location) {
 }
 
 nvt::core::global::global(fs::path location) :
-    m_location{ location }
+    m_location{ location },
+    config_json{}
 {
-    auto stream = std::ifstream(location.string() + "config.json");
-    config_json = nlohmann::json::parse(stream);
+    if (fs::directory_entry{location}.exists() == false) {
+        fs::create_directory(location);
+    }
+
+    location /= "config.json";
+    std::ifstream stream{ location };
 
     if (stream.is_open() == true) {
+        config_json = nlohmann::json::parse(stream);
 
         auto j = config_json["projects"];
 

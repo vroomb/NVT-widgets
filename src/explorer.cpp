@@ -1,13 +1,16 @@
 #include "explorer.hpp"
 #include <log.hpp>
 #include <QMouseEvent>
+#include <project/story.hpp>
 
 nvt::widgets::explorer::explorer(QWidget* parent) :
     QTreeView(parent),
     model{ new QFileSystemModel }
 {
     setModel(model);
-    setRootIndex(model->setRootPath(root));
+    setRootIndex(model->setRootPath(QString::fromStdString(
+        core::story::instance()->location().string()
+    )));
 
     hideColumn(1);
     hideColumn(2);
@@ -18,7 +21,6 @@ nvt::widgets::explorer::explorer(QWidget* parent) :
 }
 
 void nvt::widgets::explorer::mouseDoubleClickEvent(QMouseEvent* event) {
-    log log{};
     if (event->button() == Qt::LeftButton) {
         auto i = indexAt(event->pos());
         
